@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Super Manager Soccer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #2e7d32, #f4f4f4);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        select, input[type="text"], input[type="file"] {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #match-log {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+            background: #f9f9f9;
+        }
+        .player-list, .transfer-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .player-card, .transfer-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background: #fff;
+        }
+        .hidden {
+            display: none;
+        }
+        #stadium-image {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏆 Super Manager Soccer</h1>
+    <div class="container">
+        <!-- Criação do Clube -->
+        <div class="section" id="create-club">
+            <h2>Criar Seu Clube</h2>
+            <label for="club-name">Nome do Clube:</label>
+            <input type="text" id="club-name" placeholder="Digite o nome do clube"><br>
+            <label for="country">País:</label>
+            <select id="country">
+                <option value="Brasil">🇧🇷 Brasil</option>
+                <option value="Argentina">🇦🇷 Argentina</option>
+                <option value="Inglaterra">🏴 Inglaterra</option>
+                <option value="Espanha">🇪🇸 Espanha</option>
+                <option value="Itália">🇮🇹 Itália</option>
+                <option value="Alemanha">🇩🇪 Alemanha</option>
+                <option value="França">🇫🇷 França</option>
+                <option value="Portugal">🇵🇹 Portugal</option>
+                <option value="Holanda">🇳🇱 Holanda</option>
+                <option value="México">🇲🇽 México</option>
+                <option value="Uruguai">🇺🇾 Uruguai</option>
+                <option value="EUA">🇺🇸 EUA (MLS)</option>
+            </select><br>
+            <label for="play-style">Estilo de Jogo:</label>
+            <select id="play-style">
+                <option value="Ofensivo">Ofensivo</option>
+                <option value="Defensivo">Defensivo</option>
+                <option value="Equilibrado">Equilibrado</option>
+            </select><br>
+            <label for="formation">Formação Tática:</label>
+            <select id="formation">
+                <option value="4-3-3">4-3-3</option>
+                <option value="4-4-2">4-4-2</option>
+                <option value="3-5-2">3-5-2</option>
+            </select><br>
+            <label for="club-logo">Escudo (URL da Imagem):</label>
+            <input type="text" id="club-logo" placeholder="URL da imagem do escudo"><br>
+            <button onclick="createClub()">Criar Clube</button>
+        </div>
+
+        <!-- Informações do Clube -->
+        <div class="section hidden" id="club-info">
+            <h2>Seu Clube</h2>
+            <img id="club-logo-img" src="" alt="Escudo do Clube" style="max-width: 100px;">
+            <p><strong>Nome:</strong> <span id="club-name-display"></span></p>
+            <p><strong>País:</strong> <span id="country-display"></span></p>
+            <p><strong>Estilo:</strong> <span id="play-style-display"></span></p>
+            <p><strong>Formação:</strong> <span id="formation-display"></span></p>
+            <p><strong>Orçamento:</strong> $<span id="budget-display"></span></p>
+            <p><strong>Estádio:</strong> Capacidade <span id="stadium-capacity"></span> (Nível <span id="stadium-level"></span>)</p>
+            <button onclick="upgradeStadium()">Melhorar Estádio ($100,000)</button>
+        </div>
+
+        <!-- Elenco -->
+        <div class="section hidden" id="squad">
+            <h2>Elenco</h2>
+            <div class="player-list" id="player-list"></div>
+        </div>
+
+        <!-- Transferências -->
+        <div class="section hidden" id="transfers">
+            <h2>Mercado de Transferências</h2>
+            <button onclick="scoutPlayers('national')">Olheiro Nacional ($50,000)</button>
+            <button onclick="scoutPlayers('international')">Olheiro Internacional ($100,000)</button>
+            <button onclick="scoutPlayers('youth')">Olheiro Jovem ($25,000)</button>
+            <div class="transfer-list" id="transfer-list"></div>
+        </div>
+
+        <!-- Simulação de Partida -->
+        <div class="section hidden" id="match-simulation">
+            <h2>Simulação de Partida</h2>
+            <p>Jogando contra: <span id="opponent"></span></p>
+            <button onclick="simulateMatch()">Iniciar Partida</button>
+            <div id="match-log"></div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="section hidden" id="stats">
+            <h2>Estatísticas</h2>
+            <p><strong>Gols Marcados:</strong> <span id="goals-scored">0</span></p>
+            <p><strong>Títulos:</strong> <span id="titles">0</span></p>
+            <p><strong>Jogador Destaque:</strong> <span id="best-player">Nenhum</span></p>
+        </div>
+    </div>
+
+    <script>
+        let club = null;
+        let matchCount = 0;
+        let goalsScored = 0;
+        let titles = 0;
+
+        // Carregar dados salvos
+        window.onload = function() {
+            const savedClub = localStorage.getItem('club');
+            if (savedClub) {
+                club = JSON.parse(savedClub);
+                updateClubInfo();
+                displayPlayers();
+                document.getElementById('create-club').classList.add('hidden');
+                document.getElementById('club-info').classList.remove('hidden');
+                document.getElementById('squad').classList.remove('hidden');
+                document.getElementById('transfers').classList.remove('hidden');
+                document.getElementById('match-simulation').classList.remove('hidden');
+                document.getElementById('stats').classList.remove('hidden');
+                document.getElementById('opponent').textContent = getRandomOpponent();
+            }
+        };
+
+        // Criar clube
+        function createClub() {
+            const clubName = document.getElementById('club-name').value;
+            const country = document.getElementById('country').value;
+            const playStyle = document.getElementById('play-style').value;
+            const formation = document.getElementById('formation').value;
+            const logoUrl = document.getElementById('club-logo').value || 'https://via.placeholder.com/100';
+
+            if (!clubName) {
+                alert('Por favor, insira o nome do clube!');
+                return;
+            }
+
+            club = {
+                name: clubName,
+                country: country,
+                playStyle: playStyle,
+                formation: formation,
+                logo: logoUrl,
+                budget: 1000000,
+                stadium: { capacity: 10000, level: 1 },
+                players: generateInitialPlayers(),
+                fans: 5000
+            };
+
+            localStorage.setItem('club', JSON.stringify(club));
+            updateClubInfo();
+            displayPlayers();
+            document.getElementById('create-club').classList.add('hidden');
+            document.getElementById('club-info').classList.remove('hidden');
+            document.getElementById('squad').classList.remove('hidden');
+            document.getElementById('transfers').classList.remove('hidden');
+            document.getElementById('match-simulation').classList.remove('hidden');
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('opponent').textContent = getRandomOpponent();
+        }
+
+        // Atualizar informações do clube
+        function updateClubInfo() {
+            document.getElementById('club-logo-img').src = club.logo;
+            document.getElementById('club-name-display').textContent = club.name;
+            document.getElementById('country-display').textContent = club.country;
+            document.getElementById('play-style-display').textContent = club.playStyle;
+            document.getElementById('formation-display').textContent = club.formation;
+            document.getElementById('budget-display').textContent = club.budget.toLocaleString();
+            document.getElementById('stadium-capacity').textContent = club.stadium.capacity;
+            document.getElementById('stadium-level').textContent = club.stadium.level;
+        }
+
+        // Gerar elenco inicial
+        function generateInitialPlayers() {
+            const positions = ['Goleiro', 'Zagueiro', 'Lateral', 'Meio-campo', 'Atacante'];
+            const players = [];
+            for (let i = 0; i < 18; i++) {
+                players.push({
+                    id: i + 1,
+                    name: `Jogador ${i + 1}`,
+                    position: positions[Math.floor(Math.random() * positions.length)],
+                    nationality: club.country,
+                    age: Math.floor(Math.random() * (35 - 18 + 1)) + 18,
+                    attributes: {
+                        finishing: Math.floor(Math.random() * 50) + 50,
+                        passing: Math.floor(Math.random() * 50) + 50,
+                        speed: Math.floor(Math.random() * 50) + 50,
+                        defense: Math.floor(Math.random() * 50) + 50
+                    },
+                    value: Math.floor(Math.random() * 100000) + 10000,
+                    contract: Math.floor(Math.random() * 3) + 1,
+                    goals: 0
+                });
+            }
+            return players;
+        }
+
+        // Exibir elenco
+        function displayPlayers() {
+            const playerList = document.getElementById('player-list');
+            playerList.innerHTML = '';
+            club.players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.innerHTML = `
+                    <strong>${player.name}</strong><br>
+                    Posição: ${player.position}<br>
+                    Idade: ${player.age}<br>
+                    Finalização: ${player.attributes.finishing}<br>
+                    Passes: ${player.attributes.passing}<br>
+                    Velocidade: ${player.attributes.speed}<br>
+                    Defesa: ${player.attributes.defense}<br>
+                    Valor: $${player.value.toLocaleString()}<br>
+                    Contrato: ${player.contract} anos<br>
+                    Gols: ${player.goals}
+                `;
+                playerList.appendChild(card);
+            });
+        }
+
+        // Sistema de olheiros
+        function scoutPlayers(type) {
+            let cost = type === 'national' ? 50000 : type === 'international' ? 100000 : 25000;
+            if (club.budget < cost) {
+                alert('Orçamento insuficiente!');
+                return;
+            }
+            club.budget -= cost;
+            const transferList = document.getElementById('transfer-list');
+            transferList.innerHTML = '';
+            const numPlayers = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < numPlayers; i++) {
+                const player = {
+                    id: Date.now() + i,
+                    name: `Scout ${i + 1}`,
+                    position: ['Goleiro', 'Zagueiro', 'Lateral', 'Meio-campo', 'Atacante'][Math.floor(Math.random() * 5)],
+                    nationality: type === 'national' ? club.country : ['Brasil', 'Argentina', 'Inglaterra', 'Espanha', 'Itália'][Math.floor(Math.random() * 5)],
+                    age: type === 'youth' ? Math.floor(Math.random() * (20 - 16 + 1)) + 16 : Math.floor(Math.random() * (35 - 18 + 1)) + 18,
+                    attributes: {
+                        finishing: Math.floor(Math.random() * (type === 'youth' ? 40 : 60)) + 40,
+                        passing: Math.floor(Math.random() * (type === 'youth' ? 40 : 60)) + 40,
+                        speed: Math.floor(Math.random() * (type === 'youth' ? 40 : 60)) + 40,
+                        defense: Math.floor(Math.random() * (type === 'youth' ? 40 : 60)) + 40
+                    },
+                    value: Math.floor(Math.random() * (type === 'youth' ? 50000 : 200000)) + 10000,
+                    contract: Math.floor(Math.random() * 3) + 1
+                };
+                const card = document.createElement('div');
+                card.className = 'transfer-card';
+                card.innerHTML = `
+                    <strong>${player.name}</strong><br>
+                    Posição: ${player.position}<br>
+                    Nacionalidade: ${player.nationality}<br>
+                    Idade: ${player.age}<br>
+                    Finalização: ${player.attributes.finishing}<br>
+                    Valor: $${player.value.toLocaleString()}<br>
+                    <button onclick="buyPlayer(${player.id}, ${player.value}, '${player.name}', '${player.position}', '${player.nationality}', ${player.age}, ${player.attributes.finishing}, ${player.attributes.passing}, ${player.attributes.speed}, ${player.attributes.defense}, ${player.contract})">Contratar</button>
+                `;
+                transferList.appendChild(card);
+            }
+            updateClubInfo();
+            localStorage.setItem('club', JSON.stringify(club));
+        }
+
+        // Comprar jogador
+        function buyPlayer(id, value, name, position, nationality, age, finishing, passing, speed, defense, contract) {
+            if (club.budget < value) {
+                alert('Orçamento insuficiente!');
+                return;
+            }
+            club.budget -= value;
+            club.players.push({
+                id: id,
+                name: name,
+                position: position,
+                nationality: nationality,
+                age: age,
+                attributes: { finishing, passing, speed, defense },
+                value: value,
+                contract: contract,
+                goals: 0
+            });
+            displayPlayers();
+            updateClubInfo();
+            localStorage.setItem('club', JSON.stringify(club));
+            document.getElementById('transfer-list').innerHTML = '';
+        }
+
+        // Melhorar estádio
+        function upgradeStadium() {
+            if (club.budget < 100000) {
+                alert('Orçamento insuficiente!');
+                return;
+            }
+            club.budget -= 100000;
+            club.stadium.level += 1;
+            club.stadium.capacity += 5000;
+            club.fans += 1000;
+            updateClubInfo();
+            localStorage.setItem('club', JSON.stringify(club));
+            alert(`Estádio melhorado! Nova capacidade: ${club.stadium.capacity}`);
+        }
+
+        // Escolher adversário
+        function getRandomOpponent() {
+            const opponents = {
+                Brasil: ['Flamengo', 'Palmeiras', 'Corinthians'],
+                Argentina: ['Boca Juniors', 'River Plate'],
+                Inglaterra: ['Manchester United', 'Liverpool'],
+                Espanha: ['Real Madrid', 'Barcelona'],
+                Itália: ['Juventus', 'Milan'],
+                Alemanha: ['Bayern', 'Dortmund'],
+                França: ['PSG', 'Lyon'],
+                Portugal: ['Porto', 'Benfica'],
+                Holanda: ['Ajax', 'PSV'],
+                México: ['Chivas', 'América'],
+                Uruguai: ['Peñarol', 'Nacional'],
+                EUA: ['LA Galaxy', 'Seattle Sounders']
+            };
+            return opponents[club.country][Math.floor(Math.random() * opponents[club.country].length)];
+        }
+
+        // Simulação de partida
+        function simulateMatch() {
+            const log = document.getElementById('match-log');
+            log.innerHTML = '';
+            const events = [
+                '⚽ Aos 5 minutos, tentativa de chute de fora da área... Defendido!',
+                '🟡 Aos 12 minutos, cartão amarelo para o adversário.',
+                `⚽ Aos 18 minutos, ${club.players[Math.floor(Math.random() * club.players.length)].name} avança e... GOOOOOL!`,
+                '🔄 Aos 25 minutos, substituição no seu time.',
+                '⚽ Aos 40 minutos, contra-ataque perigoso... Tiro de meta.',
+                '⚽ Aos 60 minutos, cobrança de falta... Na trave!',
+                `⚽ Aos 80 minutos, ${club.players[Math.floor(Math.random() * club.players.length)].name} chuta e... GOOOOOL!`
+            ];
+            let time = 0;
+            const interval = setInterval(() => {
+                if (time >= events.length) {
+                    clearInterval(interval);
+                    const yourScore = Math.floor(Math.random() * 4);
+                    const opponentScore = Math.floor(Math.random() * 4);
+                    goalsScored += yourScore;
+                    if (yourScore > opponentScore) {
+                        titles += 1;
+                        club.budget += 50000;
+                        club.fans += 500;
+                    }
+                    log.innerHTML += `<p><strong>Fim de jogo!</strong> ${club.name} ${yourScore} x ${opponentScore} ${getRandomOpponent()}</p>`;
+                    document.getElementById('goals-scored').textContent = goalsScored;
+                    document.getElementById('titles').textContent = titles;
+                    document.getElementById('best-player').textContent = club.players.sort((a, b) => b.goals - a.goals)[0].name;
+                    updateClubInfo();
+                    localStorage.setItem('club', JSON.stringify(club));
+                    matchCount++;
+                    if (matchCount % 10 === 0) {
+                        club.players.forEach(player => {
+                            player.age += 1;
+                            player.attributes.finishing = Math.min(100, player.attributes.finishing + Math.floor(Math.random() * 5));
+                            player.value = Math.min(5000000, player.value + Math.floor(Math.random() * 10000));
+                        });
+                        displayPlayers();
+                        localStorage.setItem('club', JSON.stringify(club));
+                    }
+                    return;
+                }
+                log.innerHTML += `<p>${events[time]}</p>`;
+                log.scrollTop = log.scrollHeight;
+                time++;
+            }, 2000);
+            document.getElementById('opponent').textContent = getRandomOpponent();
+        }
+    </script>
+</body>
+</html>
